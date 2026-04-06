@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Song Lyrics</title>
+    <style>
+        /* Basic styles for the song container */
+        .song-container {
+            position: relative;
+            margin: 20px;
+        }
+        /* Styles for the chords */
+        .chord {
+            position: absolute;
+            transform: translate(-50%, -100%); /* Adjust position to sit above the lyric */
+            font-size: 14px;
+            color: #ff0000; /* Change color as needed */
+            pointer-events: none; /* Prevent interaction with chords */
+        }
+        /* Additional styles as needed */
+    </style>
+</head>
+<body>
+    <div class="song-container">
+        <h1>Song Title</h1>
+        <div class="lyrics">
+            <!-- Example lyrics with chords rendered inline -->
+            <p>
+                <span>Here </span>
+                <span class="chord" style="left: 20px; top: -20px;">C</span>
+                <span>are </span>
+                <span class="chord" style="left: 80px; top: -20px;">G</span>
+                <span>the </span>
+                <span class="chord" style="left: 130px; top: -20px;">Am</span>
+                <span>lyrics </span>
+                <span class="chord" style="left: 200px; top: -20px;">F</span>
+            </p>
+            <!-- Continue with the rest of the lyrics, using the chord class as needed -->
+        </div>
+        <!-- Existing section layout and key transposer would be included here -->
+    </div>
+    <script>
+        // Existing song loading behavior
+    </script>
+</body>
+</html>
