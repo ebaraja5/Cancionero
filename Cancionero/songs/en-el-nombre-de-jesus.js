@@ -121,6 +121,7 @@ window.CURRENT_SONG = {
         { c: "[GMaj7]Viviré, no moriré [Aadd2]" },
         { c: "[Bm9]Tu nombre hoy levantaré" },
         { c: "[Cadd2]Declaro hoy, que sano soy [Em9]" },
+        { c: "[Dadd2]Solo en Jesús" },
       ]
     },
     {
