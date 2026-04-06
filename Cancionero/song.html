@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Song Chart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f14;
+      --surface: #18181f;
+      --surface2: #1f1f2a;
+      --border: rgba(255,255,255,0.07);
+      --gold: #c9974a;
+      --gold-light: #e8be7a;
+      --gold-dim: rgba(201,151,74,0.15);
+      --text: #e8e4dc;
+      --text-dim: #9a9690;
+      --chord-color: #f0c060;
+      --chord-bg: rgba(240,192,96,0.12);
+      --radius: 12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Lato', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -5%, rgba(201,151,74,0.07) 0%, transparent 60%);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      padding: 20px 24px 0;
+      transition: color 0.18s;
+    }
+    .back-link:hover { color: var(--gold); }
+    .back-link svg { width: 14px; height: 14px; }
+
+    header {
+      text-align: center;
+      padding: 28px 24px 32px;
+      position: relative;
+    }
+    header::after {
+      content: '';
+      display: block;
+      margin: 24px auto 0;
+      width: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+    .song-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.4rem, 4vw, 2.4rem);
+      font-weight: 700;
+      color: var(--gold-light);
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+    .song-artist {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .song-meta {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .meta-pill {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 3px 14px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+    }
+
+    .transposer-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      background: rgba(15,15,20,0.9);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+    }
+    .transposer-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .t-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .key-btns {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    .key-btn {
+      background: var(--surface2);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 5px 11px;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      letter-spacing: 0.03em;
+      line-height: 1;
+    }
+    .key-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+    .key-btn.active { background: var(--gold); color: #0f0f14; border-color: var(--gold); }
+
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+
+    .section { margin-bottom: 28px; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .sec-tag {
+      font-family: 'Cinzel', serif;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 3px 13px;
+      border-radius: 20px;
+      border: 1px solid;
+    }
+    .sec-tag.intro      { color: #a8c5e8; border-color: rgba(168,197,232,0.3); background: rgba(168,197,232,0.06); }
+    .sec-tag.verso      { color: #b8d4a8; border-color: rgba(184,212,168,0.3); background: rgba(184,212,168,0.06); }
+    .sec-tag.coro       { color: #f0c060; border-color: rgba(240,192,96,0.3);  background: rgba(240,192,96,0.07); }
+    .sec-tag.interludio { color: #c8a8d8; border-color: rgba(200,168,216,0.3); background: rgba(200,168,216,0.06); }
+    .sec-tag.puente     { color: #f09878; border-color: rgba(240,152,120,0.3); background: rgba(240,152,120,0.06); }
+    .sec-tag.final      { color: var(--gold-light); border-color: rgba(232,190,122,0.35); background: rgba(232,190,122,0.07); }
+    .sec-note {
+      font-size: 0.76rem;
+      font-style: italic;
+      color: var(--text-dim);
+    }
+
+    .section-body {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      overflow-x: auto;
+    }
+    .section-body.coro    { border-color: rgba(240,192,96,0.18); }
+    .section-body.puente  { border-color: rgba(240,152,120,0.18); }
+
+    .cl-line {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      margin-bottom: 12px;
+      min-width: max-content;
+    }
+    .cl-seg {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      vertical-align: bottom;
+    }
+    .cl-chord {
+      font-family: 'Lato', sans-serif;
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: var(--chord-color);
+      background: var(--chord-bg);
+      padding: 1px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+      min-width: max-content;
+      margin-bottom: 2px;
+      display: inline-block;
+    }
+    .cl-lyric {
+      font-size: 1rem;
+      color: var(--text);
+      font-weight: 300;
+      white-space: pre-wrap;
+      word-break: normal;
+      padding: 0 4px 0 0;
+      line-height: 1.3;
+    }
+
+    .k-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 4px;
+    }
+    .k-chord {
+      font-family: 'Lato', sans-serif;
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: var(--chord-color);
+      background: var(--chord-bg);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .beat-line {
+      font-family: monospace;
+      font-size: 0.84rem;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+      white-space: pre-wrap;
+    }
+    .lyric-only {
+      font-size: 1rem;
+      color: var(--text);
+      font-weight: 300;
+      margin-bottom: 12px;
+      padding-left: 2px;
+      white-space: pre-wrap;
+    }
+    .perf-note {
+      font-size: 0.8rem;
+      font-style: italic;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .sub-note {
+      font-size: 0.78rem;
+      font-style: italic;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 14px 0;
+    }
+
+    .not-found {
+      text-align: center;
+      padding: 80px 24px;
+      color: var(--text-dim);
+    }
+    .not-found h2 { font-family: 'Cinzel', serif; color: var(--gold-light); margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <polyline points="15 18 9 12 15 6"/>
+  </svg>
+  Todas las canciones
+</a>
+
+<header>
+  <div class="song-title" id="hdr-title">Cargando...</div>
+  <div class="song-artist" id="hdr-artist"></div>
+  <div class="song-meta">
+    <span class="meta-pill" id="hdr-key"></span>
+    <span class="meta-pill" id="hdr-tempo"></span>
+  </div>
+</header>
+
+<div class="transposer-bar">
+  <div class="transposer-inner">
+    <span class="t-label">Tono:</span>
+    <div class="key-btns" id="key-btns"></div>
+  </div>
+</div>
+
+<main id="song-main"></main>
+
+<script>
+// ── Chromatic notes ──────────────────────────────────────────
+const SHARPS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const FLATS  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+const FLAT_KEYS = new Set(['F','Bb','Eb','Ab','Db','Gb']);
+const ALL_KEYS  = ['C','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+
+function noteToIndex(note) {
+  let i = SHARPS.indexOf(note);
+  return i !== -1 ? i : FLATS.indexOf(note);
+}
+function transposeNote(note, semis, flats) {
+  const i = noteToIndex(note);
+  if (i === -1) return note;
+  const ni = ((i + semis) % 12 + 12) % 12;
+  return flats ? FLATS[ni] : SHARPS[ni];
+}
+function transposeChord(chord, semis, flats) {
+  const m = chord.match(/^([A-G][b#]?)(.*)/);
+  if (!m) return chord;
+  return transposeNote(m[1], semis, flats) + m[2];
+}
+
+function parseChordPro(text) {
+  const parts = [];
+  const firstBracket = text.indexOf('[');
+  if (firstBracket > 0) parts.push({ chord: null, lyric: text.slice(0, firstBracket) });
+  const regex = /\[([^\]]+)\]([^\[]*)/g;
+  let m;
+  while ((m = regex.exec(text)) !== null) {
+    parts.push({ chord: m[1], lyric: m[2] });
+  }
+  return parts;
+}
+
+function renderSection(sec) {
+  const typeClass = sec.type || 'intro';
+  let html = `<div class="section">`;
+  html += `<div class="section-header">`;
+  html += `<span class="sec-tag ${typeClass}">${sec.label}</span>`;
+  if (sec.note) html += `<span class="sec-note">${sec.note}</span>`;
+  html += `</div>`;
+  html += `<div class="section-body ${typeClass}">`;
+
+  for (const line of sec.lines) {
+    if (line.c !== undefined) {
+      const parts = parseChordPro(line.c);
+      html += `<div class="cl-line">`;
+      for (const p of parts) {
+        html += `<span class="cl-seg">`;
+        if (p.chord) {
+          html += `<span class="cl-chord" data-chord="${p.chord}">${p.chord}</span>`;
+        } else {
+          html += `<span class="cl-chord" style="visibility:hidden;background:none;padding:0;">_</span>`;
+        }
+        html += `<span class="cl-lyric">${p.lyric}</span>`;
+        html += `</span>`;
+      }
+      html += `</div>`;
+    }
+    else if (line.k !== undefined) {
+      html += `<div class="k-line">`;
+      for (const ch of line.k) {
+        html += `<span class="k-chord" data-chord="${ch}">${ch}</span>`;
+      }
+      html += `</div>`;
+    }
+    else if (line.b !== undefined) {
+      html += `<div class="beat-line">${line.b}</div>`;
+    }
+    else if (line.l !== undefined) {
+      html += `<div class="lyric-only">${line.l}</div>`;
+    }
+    else if (line.n !== undefined) {
+      html += `<div class="perf-note">${line.n}</div>`;
+    }
+    else if (line.s !== undefined) {
+      html += `<div class="sub-note">${line.s}</div>`;
+    }
+    else if (line.d) {
+      html += `<div class="divider"></div>`;
+    }
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+function initSong(song) {
+  document.title = `${song.title} – ${song.artist}`;
+  document.getElementById('hdr-title').textContent  = song.title;
+  document.getElementById('hdr-artist').textContent = song.artist;
+  document.getElementById('hdr-key').textContent    = `Tonalidad: ${song.key}`;
+  document.getElementById('hdr-tempo').textContent  = `Tempo: ${song.tempo}`;
+
+  const main = document.getElementById('song-main');
+  main.innerHTML = song.sections.map(renderSection).join('');
+
+  const originalKey  = song.key;
+  const btnContainer = document.getElementById('key-btns');
+
+  ALL_KEYS.forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'key-btn' + (k === originalKey ? ' active' : '');
+    btn.textContent = k;
+    btn.onclick = () => setKey(k);
+    btnContainer.appendChild(btn);
+  });
+
+  function setKey(targetKey) {
+    const semis = ((noteToIndex(targetKey) - noteToIndex(originalKey)) % 12 + 12) % 12;
+    const flats = FLAT_KEYS.has(targetKey);
+    document.querySelectorAll('[data-chord]').forEach(el => {
+      el.textContent = transposeChord(el.dataset.chord, semis, flats);
+    });
+    document.getElementById('hdr-key').textContent = `Tonalidad: ${targetKey}`;
+    document.querySelectorAll('.key-btn').forEach(b => {
+      b.classList.toggle('active', b.textContent === targetKey);
+    });
+  }
+}
+
+// ── Load the individual song file dynamically ────────────────
+const params = new URLSearchParams(window.location.search);
+const songId = params.get('id');
+const main   = document.getElementById('song-main');
+
+if (!songId) {
+  document.title = 'Canción no encontrada';
+  main.innerHTML = `
+    <div class="not-found">
+      <h2>Canción no encontrada</h2>
+      <p>Verifica el enlace o regresa al listado.</p>
+      <p style="margin-top:16px;"><a href="index.html" style="color:var(--gold);">← Ir al inicio</a></p>
+    </div>`;
+} else {
+  const script = document.createElement('script');
+  script.src = `songs/${songId}.js`;
+  script.onload = () => {
+    const song = window.CURRENT_SONG;
+    if (!song) {
+      document.title = 'Canción no encontrada';
+      main.innerHTML = `
+        <div class="not-found">
+          <h2>Canción no encontrada</h2>
+          <p>Verifica el enlace o regresa al listado.</p>
+          <p style="margin-top:16px;"><a href="index.html" style="color:var(--gold);">← Ir al inicio</a></p>
+        </div>`;
+    } else {
+      initSong(song);
+    }
+  };
+  script.onerror = () => {
+    document.title = 'Canción no encontrada';
+    main.innerHTML = `
+      <div class="not-found">
+        <h2>Canción no encontrada</h2>
+        <p>Verifica el enlace o regresa al listado.</p>
+        <p style="margin-top:16px;"><a href="index.html" style="color:var(--gold);">← Ir al inicio</a></p>
+      </div>`;
+  };
+  document.head.appendChild(script);
+}
+</script>
+</body>
+</html>

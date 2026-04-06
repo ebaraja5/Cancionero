@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cancionero – Worship Charts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f14;
+      --surface: #18181f;
+      --surface2: #1f1f2a;
+      --border: rgba(255,255,255,0.07);
+      --gold: #c9974a;
+      --gold-light: #e8be7a;
+      --gold-dim: rgba(201,151,74,0.12);
+      --text: #e8e4dc;
+      --text-dim: #9a9690;
+      --radius: 12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Lato', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse 70% 50% at 50% -5%, rgba(201,151,74,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 90% 100%, rgba(126,184,247,0.03) 0%, transparent 50%);
+    }
+
+    header {
+      text-align: center;
+      padding: 60px 24px 40px;
+    }
+    .site-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 700;
+      color: var(--gold-light);
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+    .site-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .gold-rule {
+      width: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 24px auto;
+    }
+
+    .search-wrap {
+      max-width: 520px;
+      margin: 0 auto 40px;
+      padding: 0 20px;
+    }
+    .search-box {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      color: var(--text);
+      font-family: 'Lato', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 300;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-box::placeholder { color: var(--text-dim); }
+    .search-box:focus { border-color: var(--gold); }
+
+    .song-count {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+    }
+
+    .song-grid {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .song-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      text-decoration: none;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: border-color 0.18s, transform 0.18s, background 0.18s;
+      cursor: pointer;
+    }
+    .song-card:hover {
+      border-color: var(--gold);
+      background: linear-gradient(135deg, var(--surface), rgba(201,151,74,0.05));
+      transform: translateY(-2px);
+    }
+    .card-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--gold-light);
+      line-height: 1.3;
+    }
+    .card-artist {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+    }
+    .card-pills {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .pill {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 2px 10px;
+      border-radius: 20px;
+      border: 1px solid;
+    }
+    .pill-key   { color: #f0c060; border-color: rgba(240,192,96,0.35);  background: rgba(240,192,96,0.08); }
+    .pill-tempo { color: #a8c5e8; border-color: rgba(168,197,232,0.3); background: rgba(168,197,232,0.06); }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-dim);
+    }
+    .empty-state p:first-child { font-size: 1.1rem; margin-bottom: 8px; }
+    .empty-state p:last-child  { font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="site-title">Cancionero</div>
+  <div class="site-subtitle">Worship Charts</div>
+  <div class="gold-rule"></div>
+</header>
+
+<div class="search-wrap">
+  <input
+    class="search-box"
+    id="search"
+    type="search"
+    placeholder="Buscar por título o artista..."
+    autocomplete="off"
+    spellcheck="false"
+  />
+</div>
+
+<div class="song-count" id="song-count"></div>
+<div class="song-grid" id="grid"></div>
+
+<!-- manifest.js is the ONLY file you edit when adding a new song to the list -->
+<script src="manifest.js"></script>
+<script>
+  const grid   = document.getElementById('grid');
+  const search = document.getElementById('search');
+  const count  = document.getElementById('song-count');
+  const songs  = window.SONG_LIST || [];
+
+  function renderCards(list) {
+    count.textContent = `${list.length} canción${list.length !== 1 ? 'es' : ''}`;
+    if (list.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <p>No se encontraron canciones</p>
+          <p>Intenta con otro término de búsqueda</p>
+        </div>`;
+      return;
+    }
+    grid.innerHTML = list.map(s => `
+      <a class="song-card" href="song.html?id=${s.id}">
+        <div class="card-title">${s.title}</div>
+        <div class="card-artist">${s.artist}</div>
+        <div class="card-pills">
+          <span class="pill pill-key">🎵 ${s.key}</span>
+          ${s.tempo ? `<span class="pill pill-tempo">♩ ${s.tempo}</span>` : ''}
+        </div>
+      </a>`).join('');
+  }
+
+  renderCards(songs);
+
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    if (!q) { renderCards(songs); return; }
+    renderCards(songs.filter(s =>
+      s.title.toLowerCase().includes(q) ||
+      s.artist.toLowerCase().includes(q)
+    ));
+  });
+</script>
+</body>
+</html>

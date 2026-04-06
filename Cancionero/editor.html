@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chord Placement Editor</title>
+  <style>
+    :root{
+      --bg:#0f0f14;
+      --panel:#18181f;
+      --panel2:#1f1f2a;
+      --border:rgba(255,255,255,.08);
+      --text:#e8e4dc;
+      --muted:#9a9690;
+      --gold:#c9974a;
+      --gold2:#e8be7a;
+      --accent:#f0c060;
+      --ok:#7fb07b;
+      --danger:#d38b8b;
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:var(--bg);
+      color:var(--text);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    }
+    header{
+      padding:20px 18px;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);
+      position:sticky;
+      top:0;
+      z-index:20;
+      backdrop-filter: blur(10px);
+    }
+    h1{
+      margin:0 0 8px;
+      font-size:1.2rem;
+      color:var(--gold2);
+    }
+    .sub{
+      color:var(--muted);
+      font-size:.88rem;
+    }
+    .wrap{
+      max-width:1400px;
+      margin:0 auto;
+      padding:18px;
+      display:grid;
+      grid-template-columns: 1.2fr .9fr;
+      gap:16px;
+    }
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:16px;
+    }
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      margin-bottom:14px;
+    }
+    input, textarea, button, select{
+      font:inherit;
+    }
+    input, textarea, select{
+      background:var(--panel2);
+      color:var(--text);
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:10px 12px;
+      outline:none;
+    }
+    textarea{
+      width:100%;
+      min-height:140px;
+      resize:vertical;
+      line-height:1.4;
+      white-space:pre;
+    }
+    button{
+      background:var(--panel2);
+      color:var(--text);
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:10px 12px;
+      cursor:pointer;
+      transition:.15s;
+    }
+    button:hover{border-color:var(--gold); color:var(--gold2)}
+    button.active{background:var(--gold); color:#111; border-color:var(--gold)}
+    button.good{background:rgba(127,176,123,.14); border-color:rgba(127,176,123,.35)}
+    button.danger{background:rgba(211,139,139,.14); border-color:rgba(211,139,139,.35)}
+    .section-title{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      margin-bottom:12px;
+    }
+    .section-title h2{
+      margin:0;
+      font-size:1rem;
+    }
+    .muted{color:var(--muted)}
+    .line-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .line-item{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px;
+      background:#14141b;
+    }
+    .line-item.active{
+      border-color:var(--gold);
+      box-shadow:0 0 0 1px rgba(201,151,74,.12) inset;
+    }
+    .line-text{
+      font-size:1.02rem;
+      line-height:1.7;
+      margin-bottom:10px;
+      user-select:none;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .char{
+      display:inline-block;
+      padding:0 1px;
+      border-radius:4px;
+      cursor:pointer;
+      position:relative;
+    }
+    .char:hover{
+      background:rgba(201,151,74,.16);
+    }
+    .char.cursor{
+      outline:1px solid rgba(232,190,122,.45);
+      background:rgba(232,190,122,.12);
+    }
+    .char.space{
+      min-width:.5em;
+    }
+    .placements{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-top:8px;
+    }
+    .placement{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:5px 10px;
+      background:#1a1a22;
+      font-size:.85rem;
+    }
+    .placement small{color:var(--muted)}
+    .placement .x{
+      border:none;
+      background:transparent;
+      color:var(--muted);
+      padding:0 2px;
+      cursor:pointer;
+    }
+    .placement .x:hover{color:#fff}
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      margin-bottom:10px;
+    }
+    .editor-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+    .preview{
+      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      white-space:pre-wrap;
+      background:#111118;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:14px;
+      min-height:220px;
+      color:#d9d6cf;
+      overflow:auto;
+    }
+    .export{
+      width:100%;
+      min-height:220px;
+      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .hint{
+      font-size:.86rem;
+      color:var(--muted);
+      line-height:1.45;
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .spacer{flex:1}
+    .footer-note{
+      padding:0 18px 24px;
+      color:var(--muted);
+      font-size:.84rem;
+    }
+    @media (max-width: 980px){
+      .wrap{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Chord Placement Editor</h1>
+  <div class="sub">Click the exact letter where the chord should start. Then export ChordPro-ready JS.</div>
+</header>
+
+<div class="wrap">
+  <section class="card">
+    <div class="section-title">
+      <h2>Lyric Lines</h2>
+      <div class="row">
+        <button id="prevBtn">← Prev</button>
+        <button id="nextBtn">Next →</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <label class="muted">Song ID:</label>
+      <input id="songId" value="en-el-nombre-de-jesus" style="width:220px">
+      <label class="muted">Title:</label>
+      <input id="songTitle" value="En el Nombre de Jesús" style="width:260px">
+      <label class="muted">Artist:</label>
+      <input id="songArtist" value="Paz Aguayo" style="width:180px">
+      <label class="muted">Key:</label>
+      <input id="songKey" value="D" style="width:80px">
+      <label class="muted">Tempo:</label>
+      <input id="songTempo" value="105" style="width:90px">
+    </div>
+
+    <div class="hint">
+      Paste your lyric lines below, one per line. Then click “Load Lines”.
+      Use chord buttons and click the exact character position in the line.
+    </div>
+    <textarea id="sourceLines" spellcheck="false">Luchas por nosotros, a nuestro lado estás
+Tuya es la victoria, has vencido ya
+No nos detendremos, no nos moverán
+Cristo, estás aquí
+Llevas nuestras cargas, nos libras del mal
+Tuya es la victoria, has vencido ya
+No nos detendremos, no nos moverán
+Cristo, estás aquí
+Viviré, no moriré
+Por el poder de tu Nombre
+Vives en mí, soy libre al fin
+Solo en Jesús
+Llevas nuestras cargas, nos libras del mal
+Tuya es la victoria, has vencido ya
+No nos detendremos, no nos moverán
+Cristo, estás aquí
+Viviré, no moriré
+Por el poder de tu Nombre
+Vives en mí, soy libre al fin
+Solo en Jesús</textarea>
+
+    <div class="toolbar">
+      <button class="good" id="loadBtn">Load Lines</button>
+      <button id="clearBtn" class="danger">Clear All Placements</button>
+      <div class="spacer"></div>
+      <button id="copyBtn">Copy JS Output</button>
+    </div>
+
+    <div class="line-list" id="lineList"></div>
+  </section>
+
+  <aside class="card">
+    <div class="section-title">
+      <h2>Chord Tools</h2>
+      <div class="muted">Line <span id="currentIndex">1</span></div>
+    </div>
+
+    <div class="controls" id="chordButtons">
+      <button data-chord="GMaj7">GMaj7</button>
+      <button data-chord="Em9">Em9</button>
+      <button data-chord="Bm9">Bm9</button>
+      <button data-chord="Dmaj7">Dmaj7</button>
+      <button data-chord="Aadd2">Aadd2</button>
+      <button data-chord="Cadd2">Cadd2</button>
+      <button data-chord="Dadd2">Dadd2</button>
+    </div>
+
+    <div class="controls">
+      <input id="customChord" placeholder="Custom chord..." style="flex:1">
+      <button id="addCustomBtn">Add</button>
+    </div>
+
+    <div class="hint">
+      Click a chord button first, then click the exact letter in the lyric line.
+      You can place multiple chords on the same line. Click a placement to remove it.
+    </div>
+
+    <div class="section-title" style="margin-top:16px;">
+      <h2>Live Preview</h2>
+    </div>
+    <div class="preview" id="preview"></div>
+
+    <div class="section-title" style="margin-top:16px;">
+      <h2>Export JS</h2>
+    </div>
+    <textarea class="export" id="exportOut" readonly></textarea>
+  </aside>
+</div>
+
+<div class="footer-note">
+  Tip: This editor stores placements as exact character indexes and outputs ChordPro lines like <code>[Chord]lyric</code>.
+</div>
+
+<script>
+  const lineList = document.getElementById('lineList');
+  const preview = document.getElementById('preview');
+  const exportOut = document.getElementById('exportOut');
+  const currentIndexEl = document.getElementById('currentIndex');
+
+  const state = {
+    lines: [],
+    placements: [],
+    currentLine: 0,
+    currentChord: null
+  };
+
+  function loadLines() {
+    const raw = document.getElementById('sourceLines').value;
+    state.lines = raw.split('\n').map(s => s.replace(/\r/g,''));
+    state.placements = state.lines.map(() => []);
+    state.currentLine = 0;
+    render();
+    updateAll();
+  }
+
+  function chordButtonsInit() {
+    document.getElementById('chordButtons').addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-chord]');
+      if (!btn) return;
+      setChord(btn.dataset.chord, btn);
+    });
+
+    document.getElementById('addCustomBtn').addEventListener('click', () => {
+      const val = document.getElementById('customChord').value.trim();
+      if (!val) return;
+      setChord(val);
+      document.getElementById('customChord').value = '';
+    });
+  }
+
+  function setChord(chord, btnEl) {
+    state.currentChord = chord;
+    document.querySelectorAll('#chordButtons button').forEach(b => b.classList.remove('active'));
+    if (btnEl) btnEl.classList.add('active');
+  }
+
+  function render() {
+    lineList.innerHTML = '';
+    state.lines.forEach((line, i) => {
+      const item = document.createElement('div');
+      item.className = 'line-item' + (i === state.currentLine ? ' active' : '');
+      item.dataset.index = i;
+
+      const text = document.createElement('div');
+      text.className = 'line-text';
+
+      [...line].forEach((ch, idx) => {
+        const span = document.createElement('span');
+        span.className = 'char' + (ch === ' ' ? ' space' : '');
+        span.textContent = ch === ' ' ? '·' : ch;
+        span.title = `index ${idx}`;
+        span.addEventListener('click', () => placeChord(i, idx));
+        text.appendChild(span);
+      });
+
+      const placements = document.createElement('div');
+      placements.className = 'placements';
+
+      state.placements[i].forEach((p, pIndex) => {
+        const pill = document.createElement('span');
+        pill.className = 'placement';
+        pill.innerHTML = `<strong>${escapeHtml(p.chord)}</strong> <small>@${p.index}</small>`;
+        const remove = document.createElement('button');
+        remove.className = 'x';
+        remove.textContent = '×';
+        remove.addEventListener('click', () => {
+          state.placements[i].splice(pIndex, 1);
+          updateAll();
+        });
+        pill.appendChild(remove);
+        placements.appendChild(pill);
+      });
+
+      item.appendChild(text);
+      item.appendChild(placements);
+      item.addEventListener('click', () => {
+        state.currentLine = i;
+        render();
+        updateAll();
+      });
+      lineList.appendChild(item);
+    });
+
+    currentIndexEl.textContent = String(state.currentLine + 1);
+  }
+
+  function placeChord(lineIndex, charIndex) {
+    if (!state.currentChord) {
+      alert('Pick a chord first.');
+      return;
+    }
+    state.placements[lineIndex].push({
+      chord: state.currentChord,
+      index: charIndex
+    });
+    state.placements[lineIndex].sort((a,b) => a.index - b.index);
+    updateAll();
+  }
+
+  function buildChordProLine(line, placements) {
+    if (!line) return '';
+    if (!placements.length) return line;
+
+    const valid = placements
+      .filter(p => Number.isInteger(p.index))
+      .sort((a,b) => a.index - b.index);
+
+    let out = '';
+    let cursor = 0;
+
+    for (const p of valid) {
+      const idx = Math.max(0, Math.min(p.index, line.length));
+      out += line.slice(cursor, idx);
+      out += `[${p.chord}]`;
+      cursor = idx;
+    }
+    out += line.slice(cursor);
+    return out;
+  }
+
+  function buildPreview() {
+    return state.lines.map((line, i) => {
+      const cp = buildChordProLine(line, state.placements[i]);
+      return cp || '';
+    }).join('\n');
+  }
+
+  function buildExportJS() {
+    const songId = document.getElementById('songId').value.trim();
+    const title = document.getElementById('songTitle').value.trim();
+    const artist = document.getElementById('songArtist').value.trim();
+    const key = document.getElementById('songKey').value.trim();
+    const tempo = document.getElementById('songTempo').value.trim();
+
+    const songObj = {
+      id: songId,
+      title,
+      artist,
+      key,
+      tempo: Number(tempo) || 0,
+      sections: [
+        {
+          type: "verso",
+          label: "Verso",
+          lines: state.lines.map((line, i) => ({ c: buildChordProLine(line, state.placements[i]) }))
+        }
+      ]
+    };
+
+    return `// ============================================================\n//  SONG: ${title} — ${artist}\n//  Key: ${key}  |  Tempo: ${tempo}\n// ============================================================\n\nwindow.CURRENT_SONG = ${JSON.stringify(songObj, null, 2)};\n`;
+  }
+
+  function updateAll() {
+    render();
+    const p = buildPreview();
+    preview.textContent = p;
+    exportOut.value = buildExportJS();
+  }
+
+  function clearAll() {
+    state.placements = state.lines.map(() => []);
+    updateAll();
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;');
+  }
+
+  document.getElementById('loadBtn').addEventListener('click', loadLines);
+  document.getElementById('clearBtn').addEventListener('click', clearAll);
+  document.getElementById('copyBtn').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(exportOut.value);
+      alert('JS copied to clipboard.');
+    } catch {
+      exportOut.select();
+      document.execCommand('copy');
+      alert('JS copied.');
+    }
+  });
+
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    state.currentLine = Math.max(0, state.currentLine - 1);
+    render();
+    updateAll();
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    state.currentLine = Math.min(state.lines.length - 1, state.currentLine + 1);
+    render();
+    updateAll();
+  });
+
+  chordButtonsInit();
+  loadLines();
+</script>
+</body>
+</html>
